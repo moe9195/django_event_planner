@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br><h1 align="center"><strong><font color="white"> Booked Events </font></strong></h1><br>
+
+
+<div class="row">
+    {% for booking in bookings %}
+<div class="col-sm-6">
+
+		<div class="card-body">
+            <header class="masthead text-center text-white">
+
+                <h2 class="card-title">{{booking.event.title}} ({{booking.ticketnums}} tickets)</h2>
+                    <h6 class="card-title text-center">{{booking.event.date}} at {{booking.event.time}}</h6>
+                <!--
+                <br><br><br>
+                <h6 class="card-title">Date: {{booking.event.date}}</h6>
+                <h6 class="card-title">Time: {{booking.event.time}}</h6>
+                <h6 class="card-title">Location: {{booking.event.location}}</h6>
+                {% if booking.event.owner.first_name and booking.event.owner.last_name%}
+                <h6 class="card-title">Event Organizer: {{booking.event.owner.first_name}} {{booking.event.owner.last_name}}</h6>
+                {% else %}
+                <h6 class="card-title">Event Organizer: {{booking.event.owner}}</h6>
+                {% endif %}
+                <h6 class="card-title">Price: {{booking.event.price}}</h6>
+                -->
+                <a href="{% url 'event-detail' booking.event.id %}" class="btn btn-secondary">View Details</a>
+            <div class="card-body text-center">
+
+
+
+            </header>
+
+	</div>
+
+</div>
+{% endfor %}
+</div>
+{% endblock content %}

@@ -18,6 +18,7 @@
         }
         body {
           margin-bottom: 60px;
+          background-color: black;
         }
         .jumbotron{
             background-color: black;
@@ -36,14 +37,18 @@
     </style>
   </head>
 
-  <body>
+  <body bgcolor="#E6E6FA">
     {% include "navbar.html" %}
+
     {% include "messages.html" %}
+<br><br><br><br>
+<div class="container">
 
     {% block content %}
 
     {% endblock %}
-
+    <br><br><br><br>
+</div>
     <footer class="footer py-5 bg-black">
       <div class="container">
         <p class="m-0 text-center text-white small">Copyright &copy; Django Event Planner 2018</p>

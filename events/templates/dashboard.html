@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if request.user.is_staff %}
+<br><h1 align="center"><strong><font color="white"> Admin's Dashboard </font></strong></h1><br>
+{% else %}
+	{% if request.user.first_name %}
+	<br><h1 align="center"><strong><font color="white"> {{request.user.first_name}}'s Dashboard </font></strong></h1><br>
+	{% else %}
+	<br><h1 align="center"><strong><font color="white"> {{request.user}}'s Dashboard </font></strong></h1><br>
+	{% endif %}
+{% endif %}
+
+<div class="row">
+<div class="col-sm-12">
+		<div class="card-body">
+            <div class="card-body text-center">
+			<a href="{% url 'my-events' %}" class="btn btn-secondary btn-xl btn-block">My Events</a>
+	</div>
+</div>
+</div>
+
+<div class="col-sm-12">
+		<div class="card-body">
+            <div class="card-body text-center">
+			<a href="{% url 'booked-events' %}" class="btn btn-secondary btn-xl btn-block">Booked Events</a>
+	</div>
+</div>
+
+</div>
+<div class="col-sm-12">
+		<div class="card-body">
+            <div class="card-body text-center">
+			<a href="{% url 'event-list' %}" class="btn btn-secondary btn-xl btn-block">Explore Events</a>
+	</div>
+</div>
+
+</div>
+
+</div>
+
+
+{% endblock content %}

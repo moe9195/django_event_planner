@@ -17,10 +17,37 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+import API.views as apiviews
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('events.urls')),
+
+    path('api/login/', TokenObtainPairView.as_view(), name="api-login"),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name="token-refresh"),
+    path('api/register/', apiviews.Register.as_view(), name="api-register"),
+
+    # list of all upcoming events
+    path('api/eventlist/', apiviews.UpcomingEventsList.as_view(), name='api-list'),
+
+    # list of all events booked by the user
+    path('api/eventlist/booked/', apiviews.BookedEventsList.as_view(), name='api-booked-list'),
+
+    # api for creating a new event
+    path('api/create/', apiviews.CreateEvent.as_view(), name='api-create'),
+
+    # api for updating an existing event
+    path('api/update/<int:event_id>/', apiviews.UpdateEvent.as_view(), name='api-update'),
+
+    # lists to the owner the users who booked a specific event
+    path('api/bookedby/<int:event_id>/', apiviews.EventBookedBy.as_view(), name='api-bookedby'),
+
+    # lists to the owner the users who booked a specific event
+    path('api/book/<int:event_id>/', apiviews.BookEvent.as_view(), name='api-book'),
 ]
 
 

@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="container">
+
+    <h1 class="card-title text-center text-white">{{event.title}}</h1>
+    <header class="masthead text-center text-white">
+
+<div class="container">
+<div class="container">
+<div class="container">
+<div class="container">
+
+
+      <h6 class="card-title">{{event.description}}</h6>
+      <br><br><br>
+      <h6 class="card-title">Date: {{event.date}}</h6>
+      <h6 class="card-title">Time: {{event.time}}</h6>
+      <h6 class="card-title">Location: {{event.location}}</h6>
+      {% if event.owner.first_name and event.owner.last_name%}
+      <h6 class="card-title">Event Organizer: {{event.owner.first_name}} {{event.owner.last_name}}</h6>
+      {% else %}
+      <h6 class="card-title">Event Organizer: {{event.owner}}</h6>
+      {% endif %}
+      <h6 class="card-title">Price: {{event.price}}</h6>
+      <h6 class="card-title">Seats Left: {{event.seats_left}}</h6>
+</div>
+</div>
+</div>
+</div>
+
+          {% if not request.user.is_anonymous %}
+              {% if request.user == event.owner %}
+              <a href="{% url 'event-update' event.id %}" class="btn btn-secondary">Edit</a>
+              <a href="{% url 'event-delete' event.id %}" class="btn btn-secondary">Delete</a>
+
+
+                  <input type="button" class="btn btn-secondary" value="Show Attendees" onclick='myfunction();'>
+          </header>
+          <font size="3">
+            <table id="displaytable" class="table table-dark table-striped text-center" style="display: none; width: 100%" cellpadding="0" cellspacing="0" border="0">
+                <thead>
+                  <tr>
+                    <th scope="col">Booking ID</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Tickets Bought</th>
+                    <th scope="col">Total Paid</th>
+                    <th scope="col">Booking Date</th>
+                    <th scope="col">Booking Time</th>
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                    <th scope="col">E-Mail</th>
+                  </tr>
+                </thead>
+                {% for booking in bookings %}
+                <tbody>
+                  <tr>
+                    <td>{{booking.id}}</td>
+                    <td>{{booking.user}}</td>
+                    <td>{{booking.ticketnums}}</td>
+                    <td>{{booking.price_paid}}</td>
+                    <td>{{booking.booking_date}}</td>
+                    <td>{{booking.booking_time}}</td>
+
+                    {% if booking.user.first_name %}
+                    <td>{{booking.user.first_name}}</td>
+                    {% else %}
+                    <td>*</td>
+                    {% endif %}
+
+                    {% if booking.user.last_name %}
+                    <td>{{booking.user.last_name}}</td>
+                    {% else %}
+                    <td>*</td>
+                    {% endif %}
+
+                    {% if booking.user.email %}
+                    <td><a href = "mailto: {{booking.user.email}}">{{booking.user.email}}</a></td>
+                    {% else %}
+                    <td>*</td>
+                    {% endif %}
+
+                  </tr>
+                </tbody>
+                {% endfor %}
+            </table>
+            </font>
+
+              {% else %}
+                <h1 class="card-title"></h1>
+                  {% if event.is_fully_booked %}
+                      <a class="btn btn-secondary">Sorry, this event is fully booked</a>
+                      {% else %}
+                      <a href="{% url 'event-book' event.id %}" class="btn btn-secondary">Book Tickets</a>
+                  {% endif %}
+              {% endif %}
+          {% endif %}
+
+
+</div>
+
+<script type="text/javascript">
+    function myfunction()
+    {
+        if (document.getElementById("displaytable").style.display === "none")
+            document.getElementById("displaytable").style.display="block";
+        else
+            document.getElementById("displaytable").style.display="none";
+    }
+</script>
+
+{% endblock %}

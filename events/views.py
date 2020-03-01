@@ -1,7 +1,152 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.views import View
-from .forms import UserSignup, UserLogin
+from .forms import UserSignup, UserLogin, EventForm, BookForm
+from django.contrib import messages
+from .models import Event, Booking
+from django.http import JsonResponse
+from django.db.models import Q
+from datetime import datetime
+
+def EventBookView(request, event_id):
+    if request.user.is_anonymous:
+        return redirect('login')
+    event = Event.objects.get(id=event_id)
+    form = BookForm()
+    if request.method == "POST":
+        form = BookForm(request.POST)
+        if form.is_valid():
+            book = form.save(commit=False)
+            book.event = event
+            book.user = request.user
+            available_seats = event.seats_left()
+            if book.ticketnums > available_seats:
+                messages.warning(request, "Number of tickets exceeds available seats!")
+            else:
+                book.save()
+                return redirect('booked-events')
+    context = {
+        "form":form,
+        "event":event,
+    }
+    return render(request, 'book_event.html', context)
+
+def BookedEventsView(request):
+    if request.user.is_anonymous:
+        return redirect('login')
+    bookings = Booking.objects.filter(user=request.user)
+    context = {
+        "bookings":bookings
+    }
+    return render(request, 'booked_events.html', context)
+
+def EventHistoryView(request):
+    if request.user.is_anonymous:
+        return redirect('login')
+    bookings = Booking.objects.filter(user=request.user)
+    past_bookings = [booking for booking in bookings if (datetime.combine(booking.event.date, booking.event.time) <= datetime.now())]
+
+    context = {
+        "past_bookings":past_bookings
+    }
+    return render(request, 'event_history.html', context)
+
+def AllEventsView(request):
+    if request.user.is_anonymous:
+        return redirect('login')
+    today = datetime.today()
+    events = Event.objects.filter(date__gte=today).exclude(owner=request.user).order_by("date")
+    query = request.GET.get('q')
+    if query:
+        events = events.filter(
+            Q(title__icontains=query)|
+            Q(description__icontains=query)|
+            Q(owner__username__icontains=query)
+            ).distinct()
+    context = {
+        "events": events,
+    }
+    return render(request, 'all_events.html', context)
+
+def DashboardView(request):
+    if request.user.is_anonymous:
+        return redirect('login')
+    events = Event.objects.filter(owner=request.user)
+    context = {
+        "events": events
+    }
+    return render(request, 'dashboard.html', context)
+
+def MyEventsView(request):
+    if request.user.is_anonymous:
+        return redirect('login')
+    events = Event.objects.filter(owner=request.user)
+    context = {
+        "events": events
+    }
+    return render(request, 'my_events.html', context)
+
+
+def EventDetailView(request, event_id):
+    if request.user.is_anonymous:
+        return redirect('login')
+    event = Event.objects.get(id=event_id)
+    bookings = Booking.objects.filter(event=event)
+    context = {
+        "event": event,
+        "bookings":bookings,
+    }
+    return render(request, 'detail.html', context)
+
+def EventCreateView(request):
+    if request.user.is_anonymous:
+        return redirect('login')
+    form = EventForm(request.POST)
+    if request.user.is_anonymous:
+    	return redirect("login")
+    if request.method == "POST":
+        form = EventForm(request.POST, request.FILES or None)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.owner = request.user
+            event.save()
+            messages.success(request, "Event created successfully.")
+            return redirect('my-events')
+    context = {
+        "form":form,
+    }
+    return render(request, 'create_event.html', context)
+
+
+def EventUpdateView(request, event_id):
+    if request.user.is_anonymous:
+        return redirect('login')
+    event = Event.objects.get(id=event_id)
+    if request.user.is_anonymous:
+        return redirect('login.html')
+    if request.user != event.owner:
+        return redirect('event-detail', event_id)
+    form = EventForm(instance=event)
+    if request.method == "POST":
+        form = EventForm(request.POST, instance=event)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.owner = request.user
+            event.save()
+            messages.success(request, "Event updated successfully.")
+            return redirect('event-detail', event_id)
+    context = {
+        "event": event,
+        "form": form,
+    }
+    return render(request, 'edit_event.html', context)
+
+def EventDeleteView(request, event_id):
+    if request.user.is_anonymous:
+        return redirect('login')
+    Event.objects.get(id=event_id).delete()
+    messages.success(request, "Event deleted successfully.")
+    return redirect('my-events')
 
 def home(request):
     return render(request, 'home.html')
@@ -58,4 +203,3 @@ class Logout(View):
         logout(request)
         messages.success(request, "You have successfully logged out.")
         return redirect("login")
-

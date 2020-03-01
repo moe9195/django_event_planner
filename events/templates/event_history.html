@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+<br><h1 align="center"><strong><font color="white"> Events History </font></strong></h1><br>
+
+
+
+
+
+
+<table class="table table-dark table-striped text-center">
+  <thead>
+    <tr>
+      <th scope="col">Event ID</th>
+      <th scope="col">Date</th>
+      <th scope="col">Event Name</th>
+      <th scope="col">Location</th>
+      <th scope="col">Tickets Bought</th>
+      <th scope="col">Total Price</th>
+    </tr>
+  </thead>
+
+{% for booking in past_bookings %}
+  <tbody>
+    <tr>
+      <th scope="row">{{booking.event.id}}</th>
+      <td>{{booking.event.date}}</td>
+      <td>{{booking.event.title}}</td>
+      <td>{{booking.event.location}}</td>
+      <td>{{booking.ticketnums}}</td>
+      <td>{{booking.price_paid}}</td>
+    </tr>
+  </tbody>
+{% endfor %}
+</table>
+
+
+
+{% endblock content %}
