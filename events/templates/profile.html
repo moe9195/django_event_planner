@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% load static %}
+{% block content %}
+
+
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+
+<div class="container emp-profile">
+            <form method="post">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="profile-img">
+                            {% thumbnail profile.profile_picture "250x250" crop="center" as im %}
+                            <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                            {% endthumbnail %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="profile-head">
+                                    <h5>
+                                        {{user.first_name}} {{user.last_name}}
+                                    </h5>
+                                    <h6>
+                                        {% if events %}
+                                        Event Organizer
+                                        {% else %}
+                                        User
+                                        {% endif %}
+                                    </h6>
+
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">About</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Bio</a>
+                                </li>
+                                {% if events %}
+                                <li class="nav-item">
+                                    <a class="nav-link" id="events-tab" data-toggle="tab" href="#events" role="tab" aria-controls="events" aria-selected="false">Events</a>
+                                </li>
+                                {% endif %}
+                                <li class="nav-item">
+                                    <a class="nav-link" id="followers-tab" data-toggle="tab" href="#followers" role="tab" aria-controls="followers" aria-selected="false">Followers</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="following-tab" data-toggle="tab" href="#following" role="tab" aria-controls="following" aria-selected="false">Following</a>
+                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    {% if request.user == user %}
+                    <div class="col-md-2">
+                        <a href="{% url 'profile-update' user.id %}" class="btn btn-secondary">Edit Profile</a>
+                    </div>
+                    {% else %}
+                    <div class="col-md-2">
+                        <a href="{% url 'user-follow' user.id %}" class="btn btn-secondary">
+                            {% if button %}
+                                Follow
+                            {% else %}
+                                Unfollow
+                            {% endif %}
+                        </a>
+                    </div>
+                    {% endif %}
+
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+
+                    </div>
+                    <div class="col-md-8">
+                        <div class="tab-content profile-tab" id="myTabContent">
+                            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label>User Id</label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>{{user.username}}</p>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label>Name</label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>{{user.first_name}} {{user.last_name}}</p>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label>Email</label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>{{user.email}}</p>
+                                            </div>
+                                        </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label></label><br/>
+                                        <p>{{user.profile.bio}}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
+                                <table class="table table-dark table-striped text-center">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col">Title</th>
+                                      <th scope="col">Date</th>
+                                      <th scope="col">Time</th>
+                                      <th scope="col">Location</th>
+                                      <th scope="col">Price</th>
+                                      <th scope="col">Details</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for event in events %}
+                                    <tr>
+                                      <td>{{event.title}}</td>
+                                      <td>{{event.date}}</td>
+                                      <td>{{event.time}}</td>
+                                      <td>{{event.location}}</td>
+                                      <td>{{event.price}}</td>
+                                      <td><a href="{% url 'profile-update' user.id %}" class="btn btn-secondary btn-sm">View Details</a></td>
+                                    </tr>
+                                    {% endfor %}
+                                  </tbody>
+                                </table>
+                                </div>
+
+                            <div class="tab-pane fade" id="followers" role="tabpanel" aria-labelledby="followers-tab">
+                                {% if followers %}
+                                <table class="table table-dark table-striped text-center">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col">Username</th>
+                                      <th scope="col">Date Followed</th>
+                                      <th scope="col">Profile</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for f in followers %}
+                                    <tr>
+                                      <td>{{f}}</td>
+                                      <td>{{f.date_joined}}</td>
+                                      <td><a href="{% url 'profile-update' user.id %}" class="btn btn-secondary btn-sm">View Profile</a></td>
+                                    </tr>
+                                    {% endfor %}
+                                  </tbody>
+                                </table>
+                                {% else %}
+                                {{user.first_name}} has no followers.
+                                {% endif %}
+                            </div>
+
+                            <div class="tab-pane fade" id="following" role="tabpanel" aria-labelledby="following-tab">
+                                {% if following %}
+                                <table class="table table-dark table-striped text-center">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col">Username</th>
+                                      <th scope="col">Date Followed</th>
+                                      <th scope="col">Profile</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for f in following %}
+                                    <tr>
+
+                                      <td>{{f}}</td>
+                                      <td>{{f.date_joined}}</td>
+                                      <td><a href="{% url 'profile-update' user.id %}" class="btn btn-secondary btn-sm">View Profile</a></td>
+                                    </tr>
+                                    {% endfor %}
+                                  </tbody>
+                                </table>
+                                {% else %}
+                                {{user.first_name}} is not following anyone.
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+
+
+{% endblock %}

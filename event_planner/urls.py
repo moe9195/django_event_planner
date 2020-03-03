@@ -48,6 +48,17 @@ urlpatterns = [
 
     # lists to the owner the users who booked a specific event
     path('api/book/<int:event_id>/', apiviews.BookEvent.as_view(), name='api-book'),
+
+    # list of all user events
+    path('api/eventlist/<str:username>/', apiviews.UserEventsList.as_view(), name='api-user-events'),
+
+    # List of all users that the logged in user is following
+    path('api/following/', apiviews.FollowingList.as_view(), name='user-follows'),
+
+    # api to follow/unfollow a specific organizer
+    path('api/follow/', apiviews.FollowOrganizer.as_view(), name='follow-user'),
+
+
 ]
 
 

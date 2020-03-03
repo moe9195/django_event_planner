@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if request.user.is_staff %}
+<br><h1 align="center"><strong><font color="white"> Admin's Events </font></strong></h1><br>
+{% else %}
+<br><h1 align="center"><strong><font color="white"> {{request.user.first_name}}'s Events </font></strong></h1><br>
+{% endif %}
+
+
+
+<div class="row">
+    {% for user in users %}
+<div class="col-sm-6">
+
+		<div class="card-body">
+            <header class="masthead text-center text-white">
+
+			<h2 class="card-title text-center">{{user}}</h2>
+            <a href="{% url 'user-profile' user.id  %}" class="btn btn-secondary">Profile</a>
+            <a href="{% url 'user-events' user.id  %}" class="btn btn-secondary">View Events</a>
+            </header>
+
+	</div>
+
+</div>
+{% endfor %}
+</div>
+{% endblock content %}

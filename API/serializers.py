@@ -1,12 +1,23 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from events.models import Event, Booking
+from events.models import Event, Booking, Profile
+
+class FollowingSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+    date_followed = serializers.SerializerMethodField()
+    class Meta:
+        model = Profile
+        fields = ['username', 'date_followed']
+
+    def get_username(self, obj):
+        return obj.user.username
+    def get_date_followed(self, obj):
+        return obj.user.date_joined
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']
-
 
 class EventsSerializer(serializers.ModelSerializer):
     owner = UserSerializer()
@@ -14,10 +25,10 @@ class EventsSerializer(serializers.ModelSerializer):
         model = Event
         fields = ['owner', 'title', 'description', 'location', 'date', 'time', 'price', 'totalseats']
 
-# class UserEventsSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Event
-#         fields = ['owner', 'title', 'description', 'location', 'date', 'time', 'price', 'totalseats']
+class UserEventsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['owner', 'title', 'description', 'location', 'date', 'time', 'price', 'totalseats']
 
 class BookSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -30,7 +41,6 @@ class CreateEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ['title', 'description', 'location', 'date', 'time', 'price', 'totalseats']
-
 
 class BookedUsersSerializer(serializers.ModelSerializer):
     booked_by = serializers.SerializerMethodField()
@@ -49,6 +59,7 @@ class BookedUsersSerializer(serializers.ModelSerializer):
             booked_by_users.append(user.user)
         serializer = UserSerializer(booked_by_users, many=True)
         return serializer.data
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

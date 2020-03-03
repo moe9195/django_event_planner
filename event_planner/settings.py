@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'events',
     'API',
     'crispy_forms',
+    'annoying',
+    'sorl.thumbnail',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -103,6 +105,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_PROFILE_MODULE = 'accounts.Profile'
 
 REST_FRAMEWORK = {
 

@@ -2,19 +2,50 @@ from django.shortcuts import render
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView, RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from events.models import Event, Booking
+from events.models import Event, Booking, Profile
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from .permissions import IsOwner
 from datetime import datetime
+from django.db.models import Q
 from .serializers import (
         EventsSerializer,
-        #UserEventsSerializer,
+        UserEventsSerializer,
         RegisterSerializer,
         BookSerializer,
         CreateEventSerializer,
         BookedUsersSerializer,
+        FollowingSerializer,
         )
 
+class FollowOrganizer(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        username = request.data.get('username')
+        if username == request.user:
+            return JsonResponse({"error": "You cannot follow yourself!"})
+        obj_user = User.objects.get(username=username)
+        user = User.objects.get(id=obj_user.id)
+        profile = Profile.objects.get(user=user)
+        if profile.follows.filter(user=request.user):
+            profile.follows.remove(request.user.profile)
+            profile.save()
+            return JsonResponse({"success": "User unfollowed successfully."})
+        else:
+            profile.follows.add(request.user.profile)
+            profile.save()
+            return JsonResponse({"success": "User followed successfully."})
+
+
+class FollowingList(ListAPIView):
+    serializer_class = FollowingSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        user = User.objects.get(id=self.request.user.id)
+        profile = Profile.objects.get(user=user)
+        follows = user.profile.followed_by.filter(~Q(user=self.request.user))
+        follows = [f for f in follows]
+        return follows
 
 class UpcomingEventsList(ListAPIView):
     serializer_class = EventsSerializer
@@ -22,12 +53,13 @@ class UpcomingEventsList(ListAPIView):
     def get_queryset(self):
         return Event.objects.filter(date__gte=datetime.today()).order_by("date")
 
-# class UserEventsList(ListAPIView):
-#     serializer_class = UserEventsSerializer
-#     permission_classes = [AllowAny]
-#
-#     def get_queryset(self):
-#         return Event.objects.filter(owner=self.owner)
+class UserEventsList(ListAPIView):
+    serializer_class = UserEventsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        username = self.kwargs['username']
+        return Event.objects.filter(owner__username=username)
 
 class BookedEventsList(ListAPIView):
     serializer_class = BookSerializer

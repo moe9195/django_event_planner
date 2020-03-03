@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now
+from annoying.fields import AutoOneToOneField
+from PIL import Image
 
 def validate_nonzero(value):
     if value == 0:
@@ -37,3 +39,15 @@ class Booking(models.Model):
 
     def price_paid(self):
         return self.ticketnums * self.event.price
+
+class Profile(models.Model):
+    user = AutoOneToOneField(User, primary_key=True, on_delete=models.CASCADE)
+    follows = models.ManyToManyField('Profile', related_name='followed_by', symmetrical=False, default=None)
+    profile_picture = models.ImageField(default='noimage.png')
+    bio = models.TextField(max_length=500, blank=True, default=" ")
+
+    def resize_image(self):
+        return self.resize((250,250), Image.ANTIALIAS)
+
+    def __str__(self):
+        return 'Profile of user: {}'.format(self.user.username)
