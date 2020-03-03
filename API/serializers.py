@@ -21,14 +21,22 @@ class UserSerializer(serializers.ModelSerializer):
 
 class EventsSerializer(serializers.ModelSerializer):
     owner = UserSerializer()
+    seats_left = serializers.SerializerMethodField()
     class Meta:
         model = Event
-        fields = ['owner', 'title', 'description', 'location', 'date', 'time', 'price', 'totalseats']
+        fields = ['owner', 'title', 'description', 'location', 'date', 'time', 'price', 'totalseats', 'seats_left']
+
+    def get_seats_left(self, obj):
+        return obj.seats_left()
 
 class UserEventsSerializer(serializers.ModelSerializer):
+    seats_left = serializers.SerializerMethodField()
     class Meta:
         model = Event
-        fields = ['owner', 'title', 'description', 'location', 'date', 'time', 'price', 'totalseats']
+        fields = ['owner', 'title', 'description', 'location', 'date', 'time', 'price', 'totalseats', 'seats_left']
+
+    def get_seats_left(self, obj):
+        return obj.seats_left()
 
 class BookSerializer(serializers.ModelSerializer):
     user = UserSerializer()

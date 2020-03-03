@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.views import View
 from .forms import UserSignup, UserLogin, EventForm, BookForm, ProfileForm, UserForm
 from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from .models import Event, Booking, Profile
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -229,11 +231,14 @@ def ProfileUpdateView(request, user_id):
         messages.error(request, ('Only the owner can edit their profile.'))
         return redirect('user-profile', user_id)
     if request.method == 'POST':
-        user_form = UserForm(request.POST, instance=request.user)
-        profile_form = ProfileForm(request.POST, instance=request.user.profile)
-        if user_form.is_valid() and profile_form.is_valid():
+        password_form = PasswordChangeForm(request.user, request.POST)
+        user_form = UserForm(request.POST, request.FILES, instance=request.user)
+        profile_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        if user_form.is_valid() and profile_form.is_valid() and password_form.is_valid():
+            password_form.save()
             user_form.save()
             profile_form.save()
+            update_session_auth_hash(request, password_form)
             messages.success(request,"Profile updated successfully.")
             return redirect('user-profile', user_id)
         else:
@@ -241,6 +246,7 @@ def ProfileUpdateView(request, user_id):
     else:
         user_form = UserForm(instance=request.user)
         profile_form = ProfileForm(instance=request.user.profile)
+        password_form = PasswordChangeForm(user)
     return render(request, 'edit_profile.html', {
         'user_form': user_form,
         'profile_form': profile_form,

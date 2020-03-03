@@ -1,5 +1,10 @@
 from django.shortcuts import render
-from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView, RetrieveAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    CreateAPIView,
+    RetrieveUpdateAPIView,
+    RetrieveAPIView,
+    )
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from events.models import Event, Booking, Profile
