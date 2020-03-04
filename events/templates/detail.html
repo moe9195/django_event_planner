@@ -90,6 +90,7 @@
 
               {% else %}
                 <h1 class="card-title"></h1>
+                <a href="{% url 'user-profile' event.owner.id %}" class="btn btn-secondary">Organizer Profile</a>
                   {% if event.is_fully_booked %}
                       <a class="btn btn-secondary">Sorry, this event is fully booked</a>
                       {% else %}

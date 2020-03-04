@@ -3,7 +3,7 @@
 {% load static %}
 {% block content %}
 
-
+<br><br>
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -15,7 +15,7 @@
                     <div class="col-md-4">
                         <div class="profile-img">
                             {% thumbnail profile.profile_picture "250x250" crop="center" as im %}
-                            <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                            <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" >
                             {% endthumbnail %}
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                                                 <label>Email</label>
                                             </div>
                                             <div class="col-md-6">
-                                                <p>{{user.email}}</p>
+                                                <p><a href = "mailto: {{user.email}}">{{user.email}}</a></p>
                                             </div>
                                         </div>
                             </div>
@@ -107,7 +107,7 @@
                             <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <label></label><br/>
+                                        <label></label>
                                         <p>{{user.profile.bio}}</p>
                                     </div>
                                 </div>
@@ -133,7 +133,7 @@
                                       <td>{{event.time}}</td>
                                       <td>{{event.location}}</td>
                                       <td>{{event.price}}</td>
-                                      <td><a href="{% url 'profile-update' user.id %}" class="btn btn-secondary btn-sm">View Details</a></td>
+                                      <td><a href="{% url 'event-detail' event.id %}" class="btn btn-secondary btn-sm">View Details</a></td>
                                     </tr>
                                     {% endfor %}
                                   </tbody>
@@ -155,7 +155,7 @@
                                     <tr>
                                       <td>{{f}}</td>
                                       <td>{{f.date_joined}}</td>
-                                      <td><a href="{% url 'profile-update' user.id %}" class="btn btn-secondary btn-sm">View Profile</a></td>
+                                      <td><a href="{% url 'user-profile' f.id %}" class="btn btn-secondary btn-sm">View Profile</a></td>
                                     </tr>
                                     {% endfor %}
                                   </tbody>
@@ -178,10 +178,9 @@
                                   <tbody>
                                     {% for f in following %}
                                     <tr>
-
                                       <td>{{f}}</td>
                                       <td>{{f.date_joined}}</td>
-                                      <td><a href="{% url 'profile-update' user.id %}" class="btn btn-secondary btn-sm">View Profile</a></td>
+                                      <td><a href="{% url 'user-profile' f.id %}" class="btn btn-secondary btn-sm">View Profile</a></td>
                                     </tr>
                                     {% endfor %}
                                   </tbody>
@@ -198,5 +197,5 @@
         </div>
 
 
-
+<br><br><br>
 {% endblock %}

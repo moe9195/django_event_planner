@@ -19,11 +19,15 @@ from .views import (
 	ProfileView,
 	ProfileUpdateView,
 	FollowView,
+	CancelBookingView,
+	PasswordUpdateView,
+	timer,
 )
 from django.contrib import admin
 
 urlpatterns = [
 	path('', home, name='home'),
+	path('timer/', timer, name='timer'),
     path('signup/', Signup.as_view(), name='signup'),
     path('login/', Login.as_view(), name='login'),
     path('logout/', Logout.as_view(), name='logout'),
@@ -43,8 +47,8 @@ urlpatterns = [
 	path('dashboard/<int:user_id>/profile/update', ProfileUpdateView, name='profile-update'),
 	#path('dashboard/user/update', UserUpdateView, name='user-update'),
 	path('dashboard/bookedevents', BookedEventsView, name='booked-events'),
+	path('dashboard/bookedevents/<int:booking_id>/cancel', CancelBookingView, name='cancel-booking'),
 	path('dashboard/history', EventHistoryView, name='event-history'),
-
-
+	path('dashboard/<int:user_id>/change-password', PasswordUpdateView, name='password-update'),
 
 ]

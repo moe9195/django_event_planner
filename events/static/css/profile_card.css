@@ -93,3 +93,8 @@ body{
     font-weight: 600;
     color: #0062cc;
 }
+
+.center-pills {
+    display: flex;
+    justify-content: center;
+}

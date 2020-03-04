@@ -47,6 +47,7 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="{% url 'user-profile' request.user.id %}">Profile</a>
+          <a class="dropdown-item" href="{% url 'password-update' request.user.id %}">Change Password</a>
       </li>
         {% endif %}
       </ul>

@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now
 from annoying.fields import AutoOneToOneField
 from PIL import Image
+from datetime import datetime
 
 def validate_nonzero(value):
     if value == 0:
@@ -39,6 +40,23 @@ class Booking(models.Model):
 
     def price_paid(self):
         return self.ticketnums * self.event.price
+
+    def can_cancel(self):
+        event_datetime = datetime.combine(self.event.date, self.event.time)
+        booking_datetime = datetime.combine(self.booking_date, self.booking_time)
+        diff = event_datetime - booking_datetime
+        days, seconds = diff.days, diff.seconds
+        hours = days * 24 + seconds // 3600
+        if hours > 3:
+            return True
+        return False
+
+    def time_left(self):
+        event_datetime = datetime.combine(self.event.date, self.event.time)
+        booking_datetime = datetime.combine(self.booking_date, self.booking_time)
+        diff = event_datetime - booking_datetime
+        return diff
+
 
 class Profile(models.Model):
     user = AutoOneToOneField(User, primary_key=True, on_delete=models.CASCADE)

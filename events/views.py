@@ -10,6 +10,9 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.db.models import Q
 from datetime import datetime
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 def FollowView(request, user_id):
     if request.user.is_anonymous:
@@ -58,7 +61,7 @@ def UserEventsView(request, user_id):
         return redirect('login')
     events = Event.objects.filter(owner=user_id)
     context = {
-        "events": events
+        "events": events,
     }
     return render(request, 'my_events.html', context)
 
@@ -85,12 +88,51 @@ def EventBookView(request, event_id):
                 messages.warning(request, "Number of tickets exceeds available seats!")
             else:
                 book.save()
+                # sends email to user when they book if they have a valid email
+                if request.user.email:
+                    subject = 'Itinerary for the Reservation ' + str(book.id)
+                    message =   f"""
+                                BOOKING REFERENCE: {book.id}
+                                =-=-=--=-=--=-=-=-=-=-=-=-=
+                                DATE OF ISSUE: {book.booking_date}
+                                TIME OF ISSUE: {book.booking_time}
+                                NUMBER OF TICKETS: {book.ticketnums}
+                                TOTAL IN USD: {book.price_paid()} ({book.event.price} x {book.ticketnums})
+                                THANK YOU FOR YOUR PURCHASE!!!
+
+
+
+                                EVENT DETAILS:
+                                =-=-=--=-=--=-=-=-=-=-=-=-=
+                                EVENT NAME: {book.event.title}
+                                EVENT DESCRIPTION: {book.event.description}
+                                EVENT ORGANIZER: {book.event.owner}
+                                EVENT DATE: {book.event.date}
+                                EVENT TIME: {book.event.time}
+                                EVENT LOCATION: {book.event.location}
+                                """
+
+                    email_from = settings.EMAIL_HOST_USER
+                    recipient = [request.user.email]
+                    send_mail(subject, message, email_from, recipient)
                 return redirect('booked-events')
     context = {
         "form":form,
         "event":event,
     }
     return render(request, 'book_event.html', context)
+
+def CancelBookingView(request, booking_id):
+    if request.user.is_anonymous:
+        return redirect('login')
+    booking = Booking.objects.get(id=booking_id)
+    if booking.can_cancel():
+        booking.delete()
+        messages.success(request, ("Booking cancelled successfully."))
+    else:
+        messages.success(request, ("You can only cancel an event 3 hours before."))
+    return redirect('booked-events')
+
 
 def BookedEventsView(request):
     if request.user.is_anonymous:
@@ -148,29 +190,14 @@ def MyEventsView(request):
     }
     return render(request, 'my_events.html', context)
 
-# def UserUpdateView(request):
-#     args = {}
-#
-#     if request.method == 'POST':
-#         form = UpdateUser(request.POST, instance=request.user)
-#
-#         if form.is_valid():
-#             form.save()
-#             return HttpResponseRedirect(reverse('update_user_success'))
-#     else:
-#         form = UpdateUser()
-#
-#     args['form'] = form
-#     return render(request, 'update_user.html', args)
-
-
 def UserEventsView(request, user_id):
     if request.user.is_anonymous:
         return redirect('login')
     user = User.objects.get(id=user_id)
     events = Event.objects.filter(owner=user)
     context = {
-        "events": events
+        "events": events,
+        "user": user,
     }
     return render(request, 'user_events.html', context)
 
@@ -202,51 +229,48 @@ def EventCreateView(request):
     }
     return render(request, 'create_event.html', context)
 
-# def ProfileUpdateView(request, user_id):
-#     if request.user.is_anonymous:
-#         return redirect('login')
-#     user = User.objects.get(id=user_id)
-#     if request.user != user:
-#         messages.success(request, "Only the organizer can edit their profile.")
-#         return redirect('login')
-#     profile = Profile.objects.get(user=user)
-#     form = ProfileForm(instance=profile)
-#     if request.method == "POST":
-#         form = ProfileForm(request.POST, request.FILES, instance=profile)
-#         if form.is_valid():
-#             profile = form.save()
-#             messages.success(request, "Profile updated successfully.")
-#             return redirect('user-profile', user_id)
-#     context = {
-#         "profile": profile,
-#         "form": form,
-#     }
-#     return render(request, 'edit_profile.html', context)
+def PasswordUpdateView(request, user_id):
+    if request.user.is_anonymous:
+        return redirect('login')
+    user = User.objects.get(id=user_id)
+    if request.user != user:
+        messages.success(request, ('Only the owner can edit their profile.'))
+        return redirect('user-profile', user_id)
+    if request.method == 'POST':
+        password_form = PasswordChangeForm(request.user, request.POST)
+        if password_form.is_valid():
+            password_form.save()
+            update_session_auth_hash(request, password_form)
+            messages.success(request,"Profile updated successfully.")
+            return redirect('user-profile', user_id)
+        else:
+            messages.success(request, ('Please correct the errors below.'))
+    else:
+        password_form = PasswordChangeForm(user)
+    return render(request, 'edit_password.html', {
+        'password_form': password_form,
+    })
 
 def ProfileUpdateView(request, user_id):
     if request.user.is_anonymous:
         return redirect('login')
     user = User.objects.get(id=user_id)
     if request.user != user:
-        messages.error(request, ('Only the owner can edit their profile.'))
+        messages.success(request, ('Only the owner can edit their profile.'))
         return redirect('user-profile', user_id)
     if request.method == 'POST':
-        password_form = PasswordChangeForm(request.user, request.POST)
         user_form = UserForm(request.POST, request.FILES, instance=request.user)
         profile_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
-        if user_form.is_valid() and profile_form.is_valid() and password_form.is_valid():
-            password_form.save()
+        if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            update_session_auth_hash(request, password_form)
             messages.success(request,"Profile updated successfully.")
             return redirect('user-profile', user_id)
         else:
-            messages.error(request, ('Please correct the errors below.'))
+            messages.success(request, ('Please correct the errors below.'))
     else:
         user_form = UserForm(instance=request.user)
         profile_form = ProfileForm(instance=request.user.profile)
-        password_form = PasswordChangeForm(user)
     return render(request, 'edit_profile.html', {
         'user_form': user_form,
         'profile_form': profile_form,
@@ -284,6 +308,9 @@ def EventDeleteView(request, event_id):
 
 def home(request):
     return render(request, 'home.html')
+
+def timer(request):
+    return render(request, 'timer.html')
 
 class Signup(View):
     form_class = UserSignup
